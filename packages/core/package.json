@@ -1,11 +1,12 @@
 {
   "name": "@xcss/core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
+  "typings": "dist/index.d.ts",
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && tsc",
     "pub": "pnpm build & npm publish --access public"
   },
   "keywords": [],

@@ -3,7 +3,7 @@ import './style.css'
 import App from './App.vue'
 import XCss from '@xcss/core'
 let xcss = new XCss()
-console.log(xcss.parse(`
+console.log(xcss.parseHtml(`
 <x-card class="flex align-center md:flex hover:flex md:hover:align-center">
   <div class="w-100%">aa</div>
 </x-card>

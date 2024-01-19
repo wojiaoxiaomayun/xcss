@@ -8,7 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@xcss/core": "workspace:^1.0.0",
+    "@xcss/core": "workspace:^1.0.1",
     "vue": "^3.3.11"
   },
   "devDependencies": {

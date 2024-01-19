@@ -1,7 +1,10 @@
 import * as cheerio  from 'cheerio';
 export type XCssOptions = {
   rules:Array<[RegExp,Function]>,
-  theme:{[key:string]:string}
+  theme:{[key:string]:string},
+  pseudoClassDefine:{[key:string]:string}
+  responsiveDefine:{[key:string]:string}
+  shortDefine:{[key:string]:string}
 }
 export type ParseResult = {
   responsive:string,
@@ -12,53 +15,16 @@ export type ParseResult = {
 export default class XCss{
   rules:Array<[RegExp,Function]> = []
   theme:{[key:string]:string} = {}
-  pseudoClassDefine:{[key:string]:string} = {
-    'hover:':':hover'
-  }
-  responsiveDefine:{[key:string]:string} = {
-    'md:':'@media screen and (max-width:500px)'
-  }
+  pseudoClassDefine:{[key:string]:string} = {}
+  responsiveDefine:{[key:string]:string} = {}
+  shortDefine:{[key:string]:string} = {}
 
   constructor(options:XCssOptions){
-    this.rules = options?.rules || [[/^(inline-)?(?:flex)-?(r|c|cr|rr)?-?(wrap)?-?(gap)?-?(.*)$/,(arr,text,themes) => {
-      let str = `
-          display:${arr[1] || ''}flex;
-      `;
-      if(arr[2]){
-          let direcMap = {
-              c:'column',
-              r:'row',
-              cr:'column-resever',
-              rr:'row-resever',
-          }
-          str += `
-              flex-direction:${direcMap[arr[2]]};
-          `
-      }
-      if(arr[3]){
-          str +=  `
-              flex-wrap:wrap;
-          `
-      }
-      return str;
-  }],
-  [/^(align|justify|alignc)-(start|end|center|between|around|stretch|evenly)$/,(arr,text,themes) => {
-      let map = {
-          align:'align-items',
-          alignc:'align-content',
-          justify:'justify-content',
-          start:'flex-start',
-          end:'flex-end',
-          center:'center',
-          between:'space-between',
-          around:'space-around',
-          evenly:'space-evenly',
-          stretch:'stretch',
-      }
-      let str = `${map[arr[1]]}:${map[arr[2]]};`;
-      return str;
-  }]]
+    this.rules = options?.rules || []
     this.theme = options?.theme || {}
+    this.shortDefine = options?.shortDefine || {}
+    this.pseudoClassDefine = options?.pseudoClassDefine || {}
+    this.responsiveDefine = options?.responsiveDefine || {}
   }
 
   /**
@@ -66,7 +32,7 @@ export default class XCss{
    * @param html
    * @returns 
    */
-  parseHtml(html:string){
+  parseHtml(html:string):Array<ParseResult>{
     let allClass:Array<string> = this.#getAllClass(html);
     return this.#parseAllClass(allClass);
   }
@@ -88,25 +54,30 @@ export default class XCss{
     }
     return classArr;
   }
-  #parseAllClass(clas:Array<string>){
+  #parseAllClass(clas:Array<string>):Array<ParseResult>{
     return clas.map(cla => {
       return this.parseClass(cla);
-    })
+    }).flat(1)
   }
-  // parseShortClass(name:string,clas:Array<string>){
-  //   return clas.map(cla => this.parseClass(cla,name))
-  // }
-  parseClass(cla:string,name?:string):ParseResult{
+  parseShortClass(name:string,clas:Array<string>):Array<ParseResult>{
+    return clas.map(cla => this.parseClass(cla,name)).flat(1)
+  }
+
+  parseClass(cla:string,name?:string):Array<ParseResult>{
+    let shortKey = Object.keys(this.shortDefine).find(key => key == cla);
+    if(shortKey){
+      return this.parseShortClass(shortKey,this.shortDefine[shortKey].split(' '))
+    }
     let responsiveKey = Object.keys(this.responsiveDefine).find(key => cla.startsWith(key))
     let tempCla = responsiveKey?cla.replace(responsiveKey,''):cla;
     let pseudoKey = Object.keys(this.pseudoClassDefine).find(key => tempCla.startsWith(key));
     tempCla = pseudoKey?tempCla.replace(pseudoKey,''):tempCla;
-    return {
+    return [{
       name:name || cla,
       responsive:this.parseResponsiveStyle(responsiveKey),
       pseudoClass:this.parsePseudoClassStyle(pseudoKey),
       style:this.parseStyle(tempCla)
-    }
+    }]
   }
   parseStyle(cla:string){
     let rule = this.rules.find(rule => rule[0].test(cla))
