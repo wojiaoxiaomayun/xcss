@@ -1,14 +1,20 @@
 import { createApp } from 'vue'
-import './style.css'
+import router from './router'
+import PrimeVue from 'primevue/config';
 import App from './App.vue'
-import XCss from '@xcss/core'
-let xcss = new XCss()
-console.log(xcss.parseHtml(`
-<x-card class="flex align-center md:flex hover:flex md:hover:align-center">
-  <div class="w-100%">aa</div>
-</x-card>
-<x-card class="flex align-center"></x-card>
-`))
-console.log(xcss.genStyleStr(xcss.parseShortClass('flex-center',['flex','align-center','md:align-center','md:hover:flex'])))
 
-createApp(App).mount('#app')
+import XCss from '@xcss/core'
+import preset from '@xcss/preset-base'
+console.log(preset())
+let xcss = new XCss({
+  presets:[preset()]
+})
+console.log(xcss.genStyleStr(xcss.parseHtml(`<div class="flex"></div>`)))
+
+
+
+let app = createApp(App).use(router);
+app.use(PrimeVue,{
+  ripple: true 
+});
+app.mount('#app');

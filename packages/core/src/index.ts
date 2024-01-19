@@ -1,10 +1,18 @@
 import * as cheerio  from 'cheerio';
 export type XCssOptions = {
-  rules:Array<[RegExp,Function]>,
-  theme:{[key:string]:string},
-  pseudoClassDefine:{[key:string]:string}
-  responsiveDefine:{[key:string]:string}
-  shortDefine:{[key:string]:string}
+  presets?:Array<PresetObj>,
+  rules?:Array<[RegExp,Function]>,
+  theme?:{[key:string]:string},
+  pseudoClassDefine?:{[key:string]:string}
+  responsiveDefine?:{[key:string]:string}
+  shortDefine?:{[key:string]:string}
+}
+export type PresetObj = {
+  rules?:Array<[RegExp,Function]>,
+  theme?:{[key:string]:string},
+  pseudoClassDefine?:{[key:string]:string}
+  responsiveDefine?:{[key:string]:string}
+  shortDefine?:{[key:string]:string}
 }
 export type ParseResult = {
   responsive:string,
@@ -13,6 +21,7 @@ export type ParseResult = {
   name:string
 }
 export default class XCss{
+  presets:Array<PresetObj> = []
   rules:Array<[RegExp,Function]> = []
   theme:{[key:string]:string} = {}
   pseudoClassDefine:{[key:string]:string} = {}
@@ -20,11 +29,19 @@ export default class XCss{
   shortDefine:{[key:string]:string} = {}
 
   constructor(options:XCssOptions){
+    this.presets = options?.presets || []
     this.rules = options?.rules || []
     this.theme = options?.theme || {}
     this.shortDefine = options?.shortDefine || {}
     this.pseudoClassDefine = options?.pseudoClassDefine || {}
     this.responsiveDefine = options?.responsiveDefine || {}
+    this.presets.forEach(preset => {
+      this.rules.push(...(preset.rules || []))
+      this.theme = Object.assign({},preset.theme || {},this.theme)
+      this.pseudoClassDefine = Object.assign({},preset.pseudoClassDefine || {},this.pseudoClassDefine)
+      this.responsiveDefine = Object.assign({},preset.responsiveDefine || {},this.responsiveDefine)
+      this.shortDefine = Object.assign({},preset.shortDefine || {},this.shortDefine)
+    })
   }
 
   /**
