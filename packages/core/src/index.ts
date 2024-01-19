@@ -67,28 +67,28 @@ export default class XCss{
    * @returns 
    */
   parseHtml(html:string){
-    let allClass:Array<string> = this._getAllClass(html);
-    return this._parseAllClass(allClass);
+    let allClass:Array<string> = this.#getAllClass(html);
+    return this.#parseAllClass(allClass);
   }
-  _getAllClass(html:string):Array<string>{
+  #getAllClass(html:string):Array<string>{
     const $ = cheerio.load(html,{},false);
     let allClass = Array.from(new Set(Array.from($.root().children()).map(dom => {
-      return this._getClass(dom);
+      return this.#getClass(dom);
     }).flat(1)));
     return allClass;
   }
-  _getClass(dom:cheerio.Node):Array<string>{
+  #getClass(dom:cheerio.Node):Array<string>{
     let classArr:Array<string> = [];
     if(dom.type == 'tag'){
       let el = dom as cheerio.Element;
       classArr.push(...(el.attribs?.class?.split(' ') || []))
       Array.from(el.children).forEach(child => {
-        classArr.push(...this._getClass(child))
+        classArr.push(...this.#getClass(child))
       })
     }
     return classArr;
   }
-  _parseAllClass(clas:Array<string>){
+  #parseAllClass(clas:Array<string>){
     return clas.map(cla => {
       return this.parseClass(cla);
     })
@@ -130,11 +130,11 @@ export default class XCss{
   genStyleStr(result:Array<ParseResult>){
     let style = '';
     if(result && result.length){
-      style = this._genResponsiveStyle(result);
+      style = this.#genResponsiveStyle(result);
     }
     return style;
   }
-  _genResponsiveStyle(result:Array<ParseResult>){
+  #genResponsiveStyle(result:Array<ParseResult>){
     let style = '';
     let map:Map<string,Array<ParseResult>> = Map.groupBy(result,e => e.responsive)
     console.log(map)
@@ -142,26 +142,26 @@ export default class XCss{
       if(key){
         style += `
           ${key}{
-            ${this._genNameStyle(map.get(key)!)}
+            ${this.#genNameStyle(map.get(key)!)}
           }
         `
       }else{
         style += `
-          ${this._genNameStyle(map.get(key)!)}
+          ${this.#genNameStyle(map.get(key)!)}
         `
       }
     })
     return style;
   }
 
-  _genNameStyle(result:Array<ParseResult>){
+  #genNameStyle(result:Array<ParseResult>){
     let map:Map<string,Array<ParseResult>> = Map.groupBy(result,e => e.name)
     return Array.from(map.keys()).map(key => {
-      return this._genPseudoStyle(key,map.get(key)!)
+      return this.#genPseudoStyle(key,map.get(key)!)
     }).join('\n')
   }
 
-  _genPseudoStyle(name:string,result:Array<ParseResult>){
+  #genPseudoStyle(name:string,result:Array<ParseResult>){
     let map:Map<string,Array<ParseResult>> = Map.groupBy(result,e => e.pseudoClass)
     return Array.from(map.keys()).map(key => {
       return `
