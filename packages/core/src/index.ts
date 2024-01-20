@@ -1,12 +1,7 @@
 import * as cheerio  from 'cheerio';
 export type XCssOptions = {
-  presets?:Array<PresetObj>,
-  rules?:Array<[RegExp,Function]>,
-  theme?:{[key:string]:string},
-  pseudoClassDefine?:{[key:string]:string}
-  responsiveDefine?:{[key:string]:string}
-  shortDefine?:{[key:string]:string}
-}
+  presets?:Array<PresetObj>
+} & PresetObj;
 export type PresetObj = {
   rules?:Array<[RegExp,Function]>,
   theme?:{[key:string]:string},
@@ -51,7 +46,7 @@ export default class XCss{
    */
   parseHtml(html:string):Array<ParseResult>{
     let allClass:Array<string> = this.#getAllClass(html);
-    return this.#parseAllClass(allClass);
+    return this.parseAllClass(allClass);
   }
   #getAllClass(html:string):Array<string>{
     const $ = cheerio.load(html,{},false);
@@ -71,7 +66,7 @@ export default class XCss{
     }
     return classArr;
   }
-  #parseAllClass(clas:Array<string>):Array<ParseResult>{
+  parseAllClass(clas:Array<string>):Array<ParseResult>{
     return clas.map(cla => {
       return this.parseClass(cla);
     }).flat(1)
@@ -94,7 +89,7 @@ export default class XCss{
       responsive:this.parseResponsiveStyle(responsiveKey),
       pseudoClass:this.parsePseudoClassStyle(pseudoKey),
       style:this.parseStyle(tempCla)
-    }]
+    }].filter(e => e.style)
   }
   parseStyle(cla:string){
     let rule = this.rules.find(rule => rule[0].test(cla))
@@ -153,7 +148,7 @@ export default class XCss{
     let map:Map<string,Array<ParseResult>> = Map.groupBy(result,e => e.pseudoClass)
     return Array.from(map.keys()).map(key => {
       return `
-        .${name}${key || ''}{
+        .${CSS.escape(name)}${key || ''}{
           ${map.get(key)?.map(e => e.style).join('')}
         }
       `

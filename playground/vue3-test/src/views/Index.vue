@@ -1,6 +1,11 @@
 <template>
-    <Button label="Submit">aa</Button>
+    <Header></Header>
 </template>
 <script setup>
-    import Button from 'primevue/button';
+    import Header from '../components/Header.vue';
+    import {ref,onMounted} from 'vue';
+    const seetingDialog = ref(null)
+    onMounted(() => {
+        console.log(seetingDialog.value)
+    })
 </script>

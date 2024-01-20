@@ -1,0 +1,19 @@
+{
+  "name": "@xcss/runtime",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "scripts": {
+    "build": "vite build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@xcss/core": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^4.1.0"
+  }
+}

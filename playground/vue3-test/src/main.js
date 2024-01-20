@@ -1,19 +1,22 @@
 import { createApp } from 'vue'
 import router from './router'
 import PrimeVue from 'primevue/config';
+import 'primeicons/primeicons.css'
+import ConfirmationService from 'primevue/confirmationservice';
 import App from './App.vue'
+import { createPinia } from 'pinia'
 
-import XCss from '@xcss/core'
+import XCssRuntime from '@xcss/runtime'
 import preset from '@xcss/preset-base'
-console.log(preset())
-let xcss = new XCss({
-  presets:[preset()]
+let xCssRuntime = new XCssRuntime(document.body,{
+  presets:[preset()],
+  theme:{
+    primary:getComputedStyle(document.body).getPropertyValue('--primary-color'),
+    gray:getComputedStyle(document.body).getPropertyValue('--gray-100'),
+  }
 })
-console.log(xcss.genStyleStr(xcss.parseHtml(`<div class="flex"></div>`)))
 
-
-
-let app = createApp(App).use(router);
+let app = createApp(App).use(createPinia()).use(router).use(ConfirmationService);
 app.use(PrimeVue,{
   ripple: true 
 });

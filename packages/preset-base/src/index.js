@@ -79,7 +79,7 @@ const rules = [
         }
         return str;
     }],
-    [/^(margin|padding)-([ltrb])?-?(.*)$/,(arr,text,theme) => {
+    [/^(margin|padding)-([ltrb]+)?-?(.*)$/,(arr,text,theme) => {
         let str = ''
         let positionMap = {
             l:'left',
@@ -88,7 +88,9 @@ const rules = [
             b:'bottom',
         }
         if(arr[2]){
-            str += `${arr[1]}-${positionMap[arr[2]]}:${handleSize(arr[3])};`
+            arr[2].split('').forEach(e => {
+                str += `${arr[1]}-${positionMap[e]}:${handleSize(arr[3])};`
+            });
         }else{
             str += `${arr[1]}:${handleSize(arr[3])};`
         }
@@ -124,6 +126,13 @@ const rules = [
     [/^(left|right|top|bottom)-(.*)$/,(arr,text,theme) => {
         let str = `${arr[1]}:${handleSize(arr[2])};`;
         return str;
+    }],
+    [/^shadow-?(basic|light)?$/,(arr,text,theme) => {
+        let type = arr[1]
+        if(type == 'light'){
+            return `box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);`;
+        }
+        return `box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);`;
     }]
 ]
 
@@ -158,13 +167,14 @@ const handleSize = (str) =>{
     if(!str){
         return '14px'
     }
-    if(str.includes('b') || str.includes('%')){
-        return str.substring(0,str.length - 1).replace(/(-)?(\d+)/g,'$1$2%')
+    try{
+        if(!isNaN(Number.parseInt(str[str.length - 1]))){
+            return str + 'px'
+        }
+    }catch(ex){
+
     }
-    if(str.includes('p') || str.includes('px')){
-        return str.replace(/(-)?(\d+)/g,'$1$2px')
-    }
-    return str.replace(/(-)?(\d+)/g,'$1$2px');
+    return str;
 }
 
 const preset = () => {
