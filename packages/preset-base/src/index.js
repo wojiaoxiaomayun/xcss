@@ -41,6 +41,11 @@ const rules = [
         }
         return str;
     }],
+    [/^(inline-)?(block)$/,(arr,text,theme) => {
+        return `
+            display:${arr[1] || ''}block;
+        `;
+    }],
     [/^(align|justify|alignc)-(start|end|center|between|around|stretch|evenly)$/,(arr,text,theme) => {
         let map = {
             align:'align-items',
