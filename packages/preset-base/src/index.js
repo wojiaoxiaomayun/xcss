@@ -1,20 +1,45 @@
+//[['border','b'],['red','green','']]
+const createTips = (arr) => {
+    return arr.reduce((prev,current) => {
+        let result = []
+        current.forEach(e => {
+            if(prev.length){
+                prev.forEach(f => {
+                    result.push([...f,e])
+                })
+            }else{
+                result.push([e])
+            }
+        })
+        return result;
+    },[]).map(e => {
+        return e.filter(f => f).join('-')
+    })
+}
 const rules = [
     //width
-    [/^(?:size-)?(min-|max-)?([wh])-?(.+)$/,(arr,text,theme) => {
+    [/^(min-|max-)?([wh])-?(.+)$/,(arr,text,theme) => {
         let str = `${arr[1] || ''}${arr[2] == 'w'?'width':'height'}:${handleSize(arr[3])};`
         return str 
-    }],
-    [/^(?:border-|b-)([ltrb])?-?(\d+)?-?(solid|dashed|double|none)?-?(.*)$/,(arr,text,theme) => {
+    },createTips([['min','max',''],['w','h'],['10','10px','10rem','10%']])],
+    [/^(?:border-|b-)([ltrb]+)?-?(\d+)?-?(solid|dashed|double|none)?-?(.*)$/,(arr,text,theme) => {
         let positionMap = {
             l:'left',
             t:'top',
             r:'right',
             b:'bottom',
         }
-        let str = `border${arr[1]?('-' + positionMap[arr[1]]):''}:${handleSize(arr[2] || 1)} ${arr[3] || 'solid'} ${handleColor(theme,arr[4])};`
+        let str = '';
+        if(arr[1]){
+            arr[1].split('').forEach(p => {
+                str += `border${positionMap[p] || ''}:${handleSize(arr[2] || 1)} ${arr[3] || 'solid'} ${handleColor(theme,arr[4])};`
+            })
+        }else{
+            str += `border:${handleSize(arr[2] || 1)} ${arr[3] || 'solid'} ${handleColor(theme,arr[4])};`
+        }
         return str
-    }],
-    [/^(inline-)?(?:flex)-?(r|c|cr|rr)?-?(wrap)?-?(gap)?-?(.*)$/,(arr,text,theme) => {
+    },createTips([['border','b'],['l','t','r','b','lt','lr','lb','ltr','ltb','ltrb','tr','tb','trb','rb',''],['solid','dashed','double','none',''],['10','10px','10rem','10%']])],
+    [/^(inline-)?(?:flex)-?(r|c|cr|rr)?-?(wrap)?$/,(arr,text,theme) => {
         let str = `
             display:${arr[1] || ''}flex;
         `;
@@ -34,18 +59,18 @@ const rules = [
                 flex-wrap:wrap;
             `
         }
-        if(arr[4]){
-            str +=  `
-                gap:${handleSize(arr[5])};
-            `
-        }
         return str;
-    }],
+    },createTips([['inline',''],['flex'],['r','c','cr','rr',''],['wrap','']])],
+    [/^(?:gap-)(.*)$/,(arr,text,theme) => {
+        return `
+            gap:${handleSize(arr[1])};
+        `;
+    },createTips([['gap'],['8','8px','8rem']])],
     [/^(inline-)?(block)$/,(arr,text,theme) => {
         return `
             display:${arr[1] || ''}block;
         `;
-    }],
+    },['inline-block','block']],
     [/^(align|justify|alignc)-(start|end|center|between|around|stretch|evenly)$/,(arr,text,theme) => {
         let map = {
             align:'align-items',
@@ -61,7 +86,7 @@ const rules = [
         }
         let str = `${map[arr[1]]}:${map[arr[2]]};`;
         return str;
-    }],
+    },createTips([['align','alignc','justify'],['start','end','center','between','around','stretch','evenly']])],
     [/^(?:overflow|o|over|flow)-(h|a|v|hidden|auto|visible)$/,(arr,text,theme) => {
         let map = {
             h:'hidden',
@@ -70,7 +95,7 @@ const rules = [
         }
         let str = `overflow:${map[arr[1]] || arr[1]};`;
         return str;
-    }],
+    },createTips([['overflow','o','over','flow'],['h','a','v','hidden','auto','visible']])],
     [/^(?:font-|f-)?(size|weight|color)-(.*)$/,(arr,text,theme) => {
         let str = ''
         if(arr[1]){
@@ -83,7 +108,7 @@ const rules = [
             str += `font-size:${handleSize(arr[2])};`
         }
         return str;
-    }],
+    },[...createTips([['font','f',''],['size'],['10','10px']]),...createTips([['font','f',''],['color'],['red','primary']]),...createTips([['font','f',''],['weight'],['100','bold']])]],
     [/^(margin|padding)-([ltrb]+)?-?(.*)$/,(arr,text,theme) => {
         let str = ''
         let positionMap = {
@@ -100,11 +125,11 @@ const rules = [
             str += `${arr[1]}:${handleSize(arr[3])};`
         }
         return str;
-    }],
+    },createTips([['margin','padding'],['l','t','r','b','lt','lr','lb','ltr','ltb','ltrb','tr','tb','trb','rb',''],['10','10px','10rem','10%']])],
     [/^(?:bg)-(.*)$/,(arr,text,theme) => {
         let str = `background:${handleColor(theme,arr[1])};`
         return str;
-    }],
+    },createTips([['bg'],['red','primary']])],
     [/^(?:radius)-(tl|tr|bl|br)?-?(.*)$/,(arr,text,theme) => {
         let positionMap = {
             tl:'top-left',
@@ -119,26 +144,26 @@ const rules = [
             str += `border-radius:${handleSize(arr[2])};`
         }
         return str;
-    }],
+    },createTips([['radius'],['tl','tr','bl','br',''],['10','10px','10%']])],
     [/^(?:cursor|cur)-(.*)$/,(arr,text,theme) => {
         let str = `cursor:${arr[1]};`;
         return str;
-    }],
+    },createTips([['cursor','cur'],['point','move']])],
     [/^(absolute|relative|fixed)$/,(arr,text,theme) => {
         let str = `position:${arr[1]};`;
         return str;
-    }],
+    },['absolute','relative','fixed']],
     [/^(left|right|top|bottom)-(.*)$/,(arr,text,theme) => {
         let str = `${arr[1]}:${handleSize(arr[2])};`;
         return str;
-    }],
+    },createTips([['left','right','top','bottom'],['10','10px','10rem','10%']])],
     [/^shadow-?(basic|light)?$/,(arr,text,theme) => {
         let type = arr[1]
         if(type == 'light'){
             return `box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);`;
         }
         return `box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);`;
-    }]
+    },createTips([['shadow'],['','basic','light']])]
 ]
 
 const theme = {
@@ -181,6 +206,7 @@ const handleSize = (str) =>{
     }
     return str;
 }
+
 
 const preset = () => {
     return {

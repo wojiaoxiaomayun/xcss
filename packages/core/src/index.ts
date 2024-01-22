@@ -3,7 +3,7 @@ export type XCssOptions = {
   presets?:Array<PresetObj>
 } & PresetObj;
 export type PresetObj = {
-  rules?:Array<[RegExp,Function]>,
+  rules?:Array<[RegExp,Function,Array<string>]>,
   theme?:{[key:string]:string},
   pseudoClassDefine?:{[key:string]:string}
   responsiveDefine?:{[key:string]:string}
@@ -17,7 +17,7 @@ export type ParseResult = {
 }
 export default class XCss{
   presets:Array<PresetObj> = []
-  rules:Array<[RegExp,Function]> = []
+  rules:Array<[RegExp,Function,Array<string>]> = []
   theme:{[key:string]:string} = {}
   pseudoClassDefine:{[key:string]:string} = {}
   responsiveDefine:{[key:string]:string} = {}
@@ -37,6 +37,38 @@ export default class XCss{
       this.responsiveDefine = Object.assign({},preset.responsiveDefine || {},this.responsiveDefine)
       this.shortDefine = Object.assign({},preset.shortDefine || {},this.shortDefine)
     })
+  }
+
+  update(options:XCssOptions = {}){
+    if(options.rules){
+      this.rules = options.rules
+    }
+    if(options.theme){
+      this.theme = options.theme
+    }
+    if(options.shortDefine){
+      this.shortDefine = options.shortDefine
+    }
+    if(options.pseudoClassDefine){
+      this.pseudoClassDefine = options.pseudoClassDefine
+    }
+    if(options.responsiveDefine){
+      this.responsiveDefine = options.responsiveDefine
+    }
+    if(options.presets){
+      this.presets = options.presets
+      this.presets.forEach(preset => {
+        this.rules.push(...(preset.rules || []))
+        this.theme = Object.assign({},preset.theme || {},this.theme)
+        this.pseudoClassDefine = Object.assign({},preset.pseudoClassDefine || {},this.pseudoClassDefine)
+        this.responsiveDefine = Object.assign({},preset.responsiveDefine || {},this.responsiveDefine)
+        this.shortDefine = Object.assign({},preset.shortDefine || {},this.shortDefine)
+      })
+    }
+  }
+
+  getTips():Array<string>{
+    return this.rules.map(e => e[2]).flat(1)
   }
 
   /**
@@ -120,7 +152,6 @@ export default class XCss{
   #genResponsiveStyle(result:Array<ParseResult>){
     let style = '';
     let map:Map<string,Array<ParseResult>> = Map.groupBy(result,e => e.responsive)
-    console.log(map)
     Array.from(map.keys()).forEach(key => {
       if(key){
         style += `

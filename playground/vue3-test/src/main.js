@@ -15,6 +15,7 @@ let xCssRuntime = new XCssRuntime(document.body,{
     gray:getComputedStyle(document.body).getPropertyValue('--gray-100'),
   }
 })
+console.log(xCssRuntime.xcss.getTips())
 
 let app = createApp(App).use(createPinia()).use(router).use(ConfirmationService);
 app.use(PrimeVue,{

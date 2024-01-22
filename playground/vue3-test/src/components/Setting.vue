@@ -3,8 +3,8 @@
     <Accordion :multiple="true" :activeIndex="[0]">
       <AccordionTab>
         <template #header>
-            <span class="flex-gap-2 align-center justify-between w-100%">
-                <div class="flex-gap-8 align-center">
+            <span class="flex gap-2 align-center justify-between w-100%">
+                <div class="flex gap-8 align-center">
                   <span class="font-bold white-space-nowrap">Rules</span>
                   <i @click.capture.stop="showTipInfo('rule')" class="pi pi-info-circle"></i>
                 </div>
@@ -38,7 +38,7 @@
       </AccordionTab>
       <AccordionTab>
         <template #header>
-            <span class="flex-gap-2 align-center justify-between w-100%">
+            <span class="flex gap-2 align-center justify-between w-100%">
                 <span class="font-bold white-space-nowrap">Theme(主题色)</span>
                 <Button class="w-24 h-24 padding-0 relative" icon="pi pi-plus-circle" size="small" severity="success" text raised rounded @click.capture.stop="toggleAdd('theme')"/>
             </span>
@@ -65,7 +65,7 @@
       </AccordionTab>
       <AccordionTab>
         <template #header>
-            <span class="flex-gap-2 align-center justify-between w-100%">
+            <span class="flex gap-2 align-center justify-between w-100%">
                 <span class="font-bold white-space-nowrap">PseudoClass(伪类)</span>
                 <Button class="w-24 h-24 padding-0 relative" icon="pi pi-plus-circle" size="small" severity="success" text raised rounded @click.capture.stop="toggleAdd('pseudoClass')"/>
             </span>
@@ -92,7 +92,7 @@
       </AccordionTab>
       <AccordionTab>
         <template #header>
-            <span class="flex-gap-2 align-center justify-between w-100%">
+            <span class="flex gap-2 align-center justify-between w-100%">
                 <span class="font-bold white-space-nowrap">Responsive(响应式)</span>
                 <Button class="w-24 h-24 padding-0 relative" icon="pi pi-plus-circle" size="small" severity="success" text raised rounded @click.capture.stop="toggleAdd('responsive')"/>
             </span>
@@ -121,12 +121,12 @@
   </Dialog>
   <ConfirmPopup></ConfirmPopup> 
   <Dialog v-model:visible="addVisible" :header="addHeader" modal :style="{ width: '30rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
-    <div v-if="addForm.type != 'rule'" class="w-100% h-auto overflow-h flex-c-gap-8 padding-tb-8 align-end">
+    <div v-if="addForm.type != 'rule'" class="w-100% h-auto overflow-h flex-c gap-8 padding-tb-8 align-end">
       <InputText class="w-100%" type="text" v-model="addForm.key" placeholder="请输入Key"/>
       <InputText class="w-100%" type="text" v-model="addForm.value" :placeholder="`请输入${addForm.type == 'theme'?'Color':addForm.type == 'pseudoClass'?'PseudoClass':'@media'}`"/>
       <Button class="flex justify-center float-right margin-r-4" @click="saveForm">确定</Button>
     </div>
-    <div v-else class="w-100% h-auto overflow-h flex-c-gap-8 padding-tb-8 align-end">
+    <div v-else class="w-100% h-auto overflow-h flex-c gap-8 padding-tb-8 align-end">
       <InputText class="w-100%" type="text" v-model="addForm.key" placeholder="请输入Regexp"/>
       <Textarea class="w-100%" v-model="addForm.value" rows="5" cols="30" placeholder="请输入Callback"></Textarea>
       <Chips class="w-100% block" v-model="addForm.tips" placeholder="请输入Tips" />
