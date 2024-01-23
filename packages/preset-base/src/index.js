@@ -22,7 +22,7 @@ const rules = [
         let str = `${arr[1] || ''}${arr[2] == 'w'?'width':'height'}:${handleSize(arr[3])};`
         return str 
     },createTips([['min','max',''],['w','h'],['10','10px','10rem','10%']])],
-    [/^(?:border-|b-)([ltrb]+)?-?(\d+)?-?(solid|dashed|double|none)?-?(.*)$/,(arr,text,theme) => {
+    [/^(?:border-|b-         )([ltrb]+)?-?(\d+)?-?(solid|dashed|double|none)?-?(.*)$/,(arr,text,theme) => {
         let positionMap = {
             l:'left',
             t:'top',
@@ -87,7 +87,7 @@ const rules = [
         let str = `${map[arr[1]]}:${map[arr[2]]};`;
         return str;
     },createTips([['align','alignc','justify'],['start','end','center','between','around','stretch','evenly']])],
-    [/^(?:overflow|o|over|flow)-(h|a|v|hidden|auto|visible)$/,(arr,text,theme) => {
+    [/^(?:overflow|over|flow)-(h|a|v|hidden|auto|visible)$/,(arr,text,theme) => {
         let map = {
             h:'hidden',
             a:'auto',
@@ -95,8 +95,8 @@ const rules = [
         }
         let str = `overflow:${map[arr[1]] || arr[1]};`;
         return str;
-    },createTips([['overflow','o','over','flow'],['h','a','v','hidden','auto','visible']])],
-    [/^(?:font-|f-)?(size|weight|color)-(.*)$/,(arr,text,theme) => {
+    },createTips([['overflow','over','flow'],['h','a','v','hidden','auto','visible']])],
+    [/^(?:font-)?(size|weight|color)-(.*)$/,(arr,text,theme) => {
         let str = ''
         if(arr[1]){
             if(arr[1] == 'color'){
@@ -108,7 +108,7 @@ const rules = [
             str += `font-size:${handleSize(arr[2])};`
         }
         return str;
-    },[...createTips([['font','f',''],['size'],['10','10px']]),...createTips([['font','f',''],['color'],['red','primary']]),...createTips([['font','f',''],['weight'],['100','bold']])]],
+    },[...createTips([['font',''],['size'],['10','10px']]),...createTips([['font','f',''],['color'],['red','primary']]),...createTips([['font','f',''],['weight'],['100','bold']])]],
     [/^(margin|padding)-([ltrb]+)?-?(.*)$/,(arr,text,theme) => {
         let str = ''
         let positionMap = {
@@ -157,13 +157,21 @@ const rules = [
         let str = `${arr[1]}:${handleSize(arr[2])};`;
         return str;
     },createTips([['left','right','top','bottom'],['10','10px','10rem','10%']])],
-    [/^shadow-?(basic|light)?$/,(arr,text,theme) => {
+    [/^shadow-?(basic|light|dark)?$/,(arr,text,theme) => {
         let type = arr[1]
         if(type == 'light'){
             return `box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);`;
+        }else if(type == 'dark'){
+            return `box-shadow: 0 2px 12px 0 rgba(255, 255, 255, 0.1);`;
         }
         return `box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);`;
-    },createTips([['shadow'],['','basic','light']])]
+    },createTips([['shadow'],['','basic','light']])],
+    [/^zindex-(\d+)$/,(arr,text,theme) => {
+        return `z-index:${arr[1]};`
+    },['zindex-10']],
+    [/^float-(.+)$/,(arr,text,theme) => {
+        return `float:${arr[1]};`
+    },createTips([['float'],['left','right','none','inline-start','inline-end']])]
 ]
 
 const theme = {

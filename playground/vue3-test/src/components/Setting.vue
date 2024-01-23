@@ -112,7 +112,34 @@
             </Column>
             <Column  header="Delete">
               <template #body="{ data, field,index }">
-                <Button class="w-24 h-24 padding-0" icon="pi pi-times" size="small" severity="danger" text raised rounded @click="deleteRow($event,index,'pseudoClass')"/>
+                <Button class="w-24 h-24 padding-0" icon="pi pi-times" size="small" severity="danger" text raised rounded @click="deleteRow($event,index,'responsive')"/>
+              </template>
+            </Column>
+        </DataTable>
+      </AccordionTab>
+      <AccordionTab>
+        <template #header>
+            <span class="flex gap-2 align-center justify-between w-100%">
+                <span class="font-bold white-space-nowrap">ShortClass(快捷类)</span>
+                <Button class="w-24 h-24 padding-0 relative" icon="pi pi-plus-circle" size="small" severity="success" text raised rounded @click.capture.stop="toggleAdd('short')"/>
+            </span>
+        </template>
+        <DataTable v-model:editingRows="shortClassEditRows"  :value="shortClassStore.short" editMode="row" @row-edit-save="rowEditSave($event,'short')">
+            <Column field="name" header="Key">
+              <template #editor="{ data, field }">
+                  <InputText type="text" v-model="data[field]" />
+              </template>
+            </Column>
+            <Column field="value" header="Class">
+              <template #editor="{ data, field }">
+                  <InputText type="text" v-model="data[field]" />
+              </template>
+            </Column>
+            <Column :rowEditor="true"  header="Edit" style="width: 10%; min-width: 8rem">
+            </Column>
+            <Column  header="Delete">
+              <template #body="{ data, field,index }">
+                <Button class="w-24 h-24 padding-0" icon="pi pi-times" size="small" severity="danger" text raised rounded @click="deleteRow($event,index,'short')"/>
               </template>
             </Column>
         </DataTable>
@@ -123,7 +150,8 @@
   <Dialog v-model:visible="addVisible" :header="addHeader" modal :style="{ width: '30rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
     <div v-if="addForm.type != 'rule'" class="w-100% h-auto overflow-h flex-c gap-8 padding-tb-8 align-end">
       <InputText class="w-100%" type="text" v-model="addForm.key" placeholder="请输入Key"/>
-      <InputText class="w-100%" type="text" v-model="addForm.value" :placeholder="`请输入${addForm.type == 'theme'?'Color':addForm.type == 'pseudoClass'?'PseudoClass':'@media'}`"/>
+      <InputText v-if="addForm.type != 'short'" class="w-100%" type="text" v-model="addForm.value" :placeholder="`请输入${addForm.type == 'theme'?'Color':addForm.type == 'pseudoClass'?'PseudoClass':'@media'}`"/>
+      <Chips v-else class="w-100% block" v-model="addForm.value" placeholder="请输入Class" />
       <Button class="flex justify-center float-right margin-r-4" @click="saveForm">确定</Button>
     </div>
     <div v-else class="w-100% h-auto overflow-h flex-c gap-8 padding-tb-8 align-end">
@@ -147,11 +175,12 @@
   import Chips from 'primevue/chips';
   
   import {ref} from 'vue';
-  import {useThemeStore,usePseudoClassStore,useResponsiveStore,useRulesStore} from '../store/SettingStore'
+  import {useThemeStore,usePseudoClassStore,useResponsiveStore,useRulesStore,useShortClassStore} from '../store/SettingStore'
   const themeStore = useThemeStore();
   const rulesStore = useRulesStore();
   const pseudoClassStore = usePseudoClassStore();
   const responsiveStore = useResponsiveStore();
+  const shortClassStore = useShortClassStore();
   const visible = ref(false);
   const addVisible = ref(false);
   const addHeader = ref('新增')
@@ -175,6 +204,7 @@
   const themeEditRows = ref([])
   const pseudoClassEditRows = ref([])
   const responsiveEditRows = ref([])
+  const shortClassEditRows = ref([])
   function saveForm(){
     if(addForm.value.type == 'theme'){
       themeStore.addTheme(addForm.value.key,addForm.value.value);
@@ -184,6 +214,8 @@
       responsiveStore.addResponsive(addForm.value.key,addForm.value.value)
     }else if(addForm.value.type == 'rule'){
       rulesStore.addRules(addForm.value.key,addForm.value.value,addForm.value.tips)
+    }else if(addForm.value.type == 'short'){
+      shortClassStore.addShort(addForm.value.key,addForm.value.value)
     }
     addVisible.value = false
     addForm.value.key = ''
@@ -201,6 +233,8 @@
       responsiveStore.changePseudoClass(index,newData)
     }else if(type == 'rule'){
       rulesStore.changeRules(index,newData)
+    }else if(type == 'short'){
+      shortClassStore.changeShort(index,newData)
     }
   }
   import { useConfirm } from "primevue/useconfirm";
@@ -223,6 +257,8 @@
               break;
             case 'rule':
               rulesStore.deleteRules(index)
+            case 'short':
+              shortClassStore.deleteShort(index)
               break;
             default:
               break;

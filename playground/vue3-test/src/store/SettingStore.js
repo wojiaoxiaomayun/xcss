@@ -106,3 +106,40 @@ export const useResponsiveStore = defineStore('Responsive', () => {
 
   return { responsive, addResponsive,changeResponsive,deleteResponsive }
 })
+export const useShortClassStore = defineStore('ShortClass',() => {
+  const short = ref(getStorage('xcss-short',[]))
+  function addShort(name,value) {
+    short.value.push({
+      name,value
+    })
+    saveToStorage()
+  }
+
+  function changeShort(index,data){
+    short.value.splice(index,1,{...data})
+    saveToStorage()
+  }
+
+  function deleteShort(index){
+    short.value.splice(index,1)
+    saveToStorage()
+  }
+
+  function saveToStorage(){
+    setStorage('xcss-short',short.value)
+  }
+
+  return { short, addShort,changeShort,deleteShort }
+})
+
+export const useThemeModelStore = defineStore('ThemeModel',() => {
+  const themeModel = ref(getStorage('xcss-theme-model','dark'))
+  function setThemeModel(model){
+    themeModel.value = model
+    saveToStorage()
+  }
+  function saveToStorage(){
+    setStorage('xcss-theme-model',themeModel.value)
+  }
+  return {themeModel,setThemeModel}
+})
