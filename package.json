@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "pnpm -F vue3-test dev"
+    "dev": "pnpm -F vue3-test dev",
+    "build":"pnpm -F @xcss/core build && pnpm -F @xcss/runtime build && pnpm -F vue3-test build"
   },
   "keywords": [],
   "author": "",
