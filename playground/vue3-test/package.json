@@ -10,14 +10,18 @@
   "dependencies": {
     "@xcss/preset-base": "workspace:^",
     "@xcss/runtime": "workspace:^",
+    "monaco-editor": "0.45.0",
     "pinia": "^2.1.7",
     "primeicons": "^6.0.1",
     "primevue": "^3.46.0",
+    "prismjs": "^1.29.0",
+    "scule": "^1.2.0",
     "vue": "^3.3.11",
     "vue-router": "4"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.5.2",
+    "prettier": "3.2.4",
     "vite": "^4.1.0"
   }
 }

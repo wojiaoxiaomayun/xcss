@@ -18,11 +18,11 @@ const createTips = (arr) => {
 }
 const rules = [
     //width
-    [/^(min-|max-)?([wh])-?(.+)$/,(arr,text,theme) => {
-        let str = `${arr[1] || ''}${arr[2] == 'w'?'width':'height'}:${handleSize(arr[3])};`
+    [/^(min-|max-)?([wh])-?(.*?)(!)?$/,(arr,text,theme) => {
+        let str = `${arr[1] || ''}${arr[2] == 'w'?'width':'height'}:${handleSize(arr[3])}${arr[4]?' !important':''};`
         return str 
     },createTips([['min','max',''],['w','h'],['10','10px','10rem','10%']])],
-    [/^(?:border-|b-         )([ltrb]+)?-?(\d+)?-?(solid|dashed|double|none)?-?(.*)$/,(arr,text,theme) => {
+    [/^(?:border-|b-)([ltrb]+)?-?(\d+)?-?(solid|dashed|double|none)?-?(.*)$/,(arr,text,theme) => {
         let positionMap = {
             l:'left',
             t:'top',
@@ -32,7 +32,7 @@ const rules = [
         let str = '';
         if(arr[1]){
             arr[1].split('').forEach(p => {
-                str += `border${positionMap[p] || ''}:${handleSize(arr[2] || 1)} ${arr[3] || 'solid'} ${handleColor(theme,arr[4])};`
+                str += `border-${positionMap[p] || ''}:${handleSize(arr[2] || 1)} ${arr[3] || 'solid'} ${handleColor(theme,arr[4])};`
             })
         }else{
             str += `border:${handleSize(arr[2] || 1)} ${arr[3] || 'solid'} ${handleColor(theme,arr[4])};`
@@ -108,8 +108,8 @@ const rules = [
             str += `font-size:${handleSize(arr[2])};`
         }
         return str;
-    },[...createTips([['font',''],['size'],['10','10px']]),...createTips([['font','f',''],['color'],['red','primary']]),...createTips([['font','f',''],['weight'],['100','bold']])]],
-    [/^(margin|padding)-([ltrb]+)?-?(.*)$/,(arr,text,theme) => {
+    },[...createTips([['font',''],['size'],['10','10px']]),...createTips([['font',''],['color'],['red','primary']]),...createTips([['font',''],['weight'],['100','bold']])]],
+    [/^(margin|padding)-([ltrb]+)?-?(.*?)(!)?$/,(arr,text,theme) => {
         let str = ''
         let positionMap = {
             l:'left',
@@ -119,10 +119,10 @@ const rules = [
         }
         if(arr[2]){
             arr[2].split('').forEach(e => {
-                str += `${arr[1]}-${positionMap[e]}:${handleSize(arr[3])};`
+                str += `${arr[1]}-${positionMap[e]}:${handleSize(arr[3])}${arr[4]?' !important':''};`
             });
         }else{
-            str += `${arr[1]}:${handleSize(arr[3])};`
+            str += `${arr[1]}:${handleSize(arr[3])}${arr[4]?' !important':''};`
         }
         return str;
     },createTips([['margin','padding'],['l','t','r','b','lt','lr','lb','ltr','ltb','ltrb','tr','tb','trb','rb',''],['10','10px','10rem','10%']])],
