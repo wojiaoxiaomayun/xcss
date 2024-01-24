@@ -1,17 +1,18 @@
 <script setup>
   import Splitter from 'primevue/splitter';
   import SplitterPanel from 'primevue/splitterpanel';
+  import InputText from 'primevue/inputtext';
   import {ref,watchEffect,watch,onMounted} from 'vue'
   import Prism from 'prismjs';
   import 'prismjs/plugins/toolbar/prism-toolbar.min.js'
   import 'prismjs/plugins/toolbar/prism-toolbar.min.css'
   import 'prismjs/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js'
 
-  import * as prettier from 'prettier'
-  import postcssPlugin from 'prettier/plugins/postcss.mjs'
+
 
   import {XCss} from '@xcss/runtime'
   import preset from '@xcss/preset-base'
+  
   let xcss = new XCss({
     presets:[preset()],
     theme:{
@@ -21,6 +22,19 @@
   })
 
   import { useThemeModelStore } from '../store/SettingStore';
+  import {formatCode} from '../util/format'
+  
+  const className = ref('test')
+  const code = ref(`.${className.value}{width:100%;}`)
+  const codeHighLight = ref('')
+  
+  watch(() => code.value,async () => {
+    codeHighLight.value = Prism.highlight(await formatCode(code.value),Prism.languages.css,'css')
+  },{immediate:true})
+ 
+
+  import * as monaco from 'monaco-editor'
+  import {loadTips,validate} from '../util/editor'
   const themeModelStore = useThemeModelStore();
   watchEffect(async () => {
     let link = document.getElementById('code-high-light')
@@ -35,24 +49,8 @@
     }else{
       link.setAttribute('href','/themes/codehighlight/prism.min.css')
     }
+    monaco.editor.setTheme(`vs${themeModelStore.themeModel == 'dark'?'-dark':''}`)
   })
-  const code = ref(`.test{width:100%;}`)
-  const codeHighLight = ref('')
-  
-  watch(() => code.value,async () => {
-    codeHighLight.value = Prism.highlight(await formatCode(code.value),Prism.languages.css,'css')
-  },{immediate:true})
-  async function formatCode(code){
-    if(!code) return ''
-    const formatted = await prettier.format(code, {
-      parser: "css",
-      plugins:[postcssPlugin],
-    });
-    return formatted;
-  }
-
-  import * as monaco from 'monaco-editor'
-  import {loadTips,validate} from '../util/editor'
   let editor = null
   function initEditor(){
             // 初始化编辑器，确保dom已经渲染
@@ -61,13 +59,14 @@
         value: '',
         language:'sql',
         automaticLayout: true,
-        theme:'vs-dark',
+        theme:`vs${themeModelStore.themeModel == 'dark'?'-dark':''}`,
         minimap:{
           enabled:false
         }
     });
-    editor.getModel().onDidChangeContent((e) => {
-      validate(editor.getModel(),xcss)
+    
+    editor.getModel().onDidChangeContent(async (e) => {
+      await validate(editor,xcss,className.value)
       parseCode()
     })
   }
@@ -75,32 +74,53 @@
     initEditor()
   })
 
+  
+
+  watch(() => className.value,async () => {
+    await validate(editor,xcss,className.value)
+    parseCode()
+  })
+
   function parseCode(){
     let value = editor.getValue();
     if(value){
-      code.value = xcss.genStyleStr(xcss.parseShortClass('test',value.split(/\s/g)))
+      code.value = xcss.genStyleStr(xcss.parseShortClass(className.value,value.split(/\s/g)).map(e => {
+        e.style = e.style.replace(/\s/g,'')
+        return e;
+      }))
     }else{
-      code.value = `.test{width:100%;}`
+      code.value = `.${className.value}{width:100%;}`
     }
   }
 </script>
 <template>
-  <Splitter style="height: 300px" class="mb-5">
-      <SplitterPanel>
-        <div id="container" class="w-100% h-100%"></div>
-      </SplitterPanel>
-      <SplitterPanel class="code-panel">
-          <pre 
-            class="language-css w-100% h-100% padding-tb-8 padding-lr-16 margin-0! "
-            data-prismjs-copy="拷贝"
-            data-prismjs-copy-error="拷贝失败"
-            data-prismjs-copy-success="拷贝成功"
-          ><code class="language-css" v-html="codeHighLight"></code></pre>
-      </SplitterPanel>
-  </Splitter>
+  <div class="flex-c gap-8 margin-b-8">
+    <label for="className">ClassName</label>
+    <InputText id="className" type="text" v-model="className" class="w-50% margin-b-8" placeholder="请输入ClassName"/>
+</div>
+  <div class="flex-c gap-8">
+      <label for="className">ParseArea</label>
+      <Splitter style="height: 300px" class="mb-5">
+        <SplitterPanel>
+          <div id="container" class="w-100% h-100%"></div>
+        </SplitterPanel>
+        <SplitterPanel class="code-panel">
+            <pre 
+              class="language-css w-100% h-100% padding-tb-8 padding-lr-16 margin-0! "
+              data-prismjs-copy="拷贝"
+              data-prismjs-copy-error="拷贝失败"
+              data-prismjs-copy-success="拷贝成功"
+            ><code class="language-css" v-html="codeHighLight"></code></pre>
+        </SplitterPanel>
+      </Splitter>
+  </div>
+
 </template>
 <style scoped>
   :deep(.code-panel .code-toolbar){
     height: 100%;
   }
+  /* :deep(#container .monaco-editor){
+    padding-top: 8px;
+  } */
 </style>

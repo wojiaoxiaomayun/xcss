@@ -1,5 +1,6 @@
 
 import * as monaco from 'monaco-editor'
+import { formatCode } from './format';
 export function loadTips(tips){
   monaco.languages.registerCompletionItemProvider('sql', {
     provideCompletionItems: function(model, position) {
@@ -47,8 +48,13 @@ export function loadTips(tips){
     triggerCharacters: ["$",""]
 });
 }
-
-export function validate(model,xcss) {
+let decoration = null;
+export async function validate(editor,xcss,className = 'red') {
+  let model = editor.getModel();
+  if(!decoration){
+    decoration = editor.createDecorationsCollection([]);
+  }
+  decoration.clear();
 	const markers = [];
 	// lines start at 1
 	for (let i = 1; i < model.getLineCount() + 1; i++) {
@@ -62,26 +68,41 @@ export function validate(model,xcss) {
     let tempStr = ''
     let tempStrNumbers = [];
     let isSpace = false;
+    async function handleErrorAndBackground(){
+      if(isSpace && tempStr != ''){
+        let result = xcss.parseClass(tempStr,className).map(e => {
+          e.style = e.style.replace(/\s/g,'')
+          return e;
+        })
+        let newRange = {
+          startLineNumber: range.startLineNumber,
+          startColumn: range.startColumn + tempStrNumbers[0],
+          endLineNumber: range.endLineNumber,
+          endColumn: range.startColumn + tempStrNumbers[tempStrNumbers.length - 1] + 1
+        }
+        if(!result.length){
+          markers.push({
+            message: "不支持的class",
+            severity: monaco.MarkerSeverity.Error,
+            ...newRange
+          });
+        }else{
+          markers.push({
+            message: await formatCode(xcss.genStyleStr(result)),
+            severity: monaco.MarkerSeverity.Info,
+            ...newRange
+          });
+        }
+        isSpace = false;
+        tempStr = '';
+        tempStrNumbers = [];
+      }
+    }
 		for(let i = 0; i < content.length; i++){
       if(content[i] == ' '){
         isSpace = true;
       }else{
-        if(isSpace && tempStr != ''){
-          let result = xcss.parseClass(tempStr)
-          if(!result.length){
-            markers.push({
-              message: "不支持的class",
-              severity: monaco.MarkerSeverity.Error,
-              startLineNumber: range.startLineNumber,
-              startColumn: range.startColumn + tempStrNumbers[0],
-              endLineNumber: range.endLineNumber,
-              endColumn: range.startColumn + tempStrNumbers[tempStrNumbers.length - 1] + 1,
-            });
-          }
-          isSpace = false;
-          tempStr = '';
-          tempStrNumbers = [];
-        }
+        await handleErrorAndBackground();
         tempStr += content[i]
         tempStrNumbers.push(i)
       }
@@ -90,22 +111,7 @@ export function validate(model,xcss) {
         tempStrNumbers.push(i)
       }
     }
-		if(isSpace && tempStr != ''){
-      let result = xcss.parseClass(tempStr)
-      if(!result.length){
-        markers.push({
-          message: "不支持的class",
-          severity: monaco.MarkerSeverity.Error,
-          startLineNumber: range.startLineNumber,
-          startColumn: range.startColumn + tempStrNumbers[0],
-          endLineNumber: range.endLineNumber,
-          endColumn: range.startColumn + tempStrNumbers[tempStrNumbers.length - 1] + 1,
-        });
-      }
-      isSpace = false;
-      tempStr = '';
-      tempStrNumbers = [];
-    }
+		await handleErrorAndBackground();
 	}
 	monaco.editor.setModelMarkers(model, "owner", markers);
 }

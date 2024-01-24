@@ -68,7 +68,14 @@ export default class XCss{
   }
 
   getTips():Array<string>{
-    return this.rules.map(e => e[2]).flat(1)
+    let tips = this.rules.map(e => e[2]).flat(1);
+    let pseudoTips = Object.keys(this.pseudoClassDefine).map(key => {
+      return tips.map(e => key + e)
+    }).flat(1)
+    let responsiveTips = Object.keys(this.responsiveDefine).map(key => {
+      return [...tips.map(e => key + e),...pseudoTips.map(e => key + e)]
+    }).flat(1)
+    return [...tips,...pseudoTips,...responsiveTips];
   }
 
   /**
