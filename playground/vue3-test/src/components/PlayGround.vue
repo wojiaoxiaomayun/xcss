@@ -34,7 +34,7 @@
  
 
   import * as monaco from 'monaco-editor'
-  import {loadTips,validate} from '../util/editor'
+  import {loadTips,validate,defineXCssLanguage} from '../util/editor'
   const themeModelStore = useThemeModelStore();
   watchEffect(async () => {
     let link = document.getElementById('code-high-light')
@@ -54,6 +54,7 @@
   let editor = null
   function initEditor(){
             // 初始化编辑器，确保dom已经渲染
+    // defineXCssLanguage(xcss)
     loadTips(xcss.getTips());
     editor = monaco.editor.create(document.getElementById('container'), {
         value: '',
@@ -65,20 +66,17 @@
         }
     });
     
-    editor.getModel().onDidChangeContent(async (e) => {
-      await validate(editor,xcss,className.value)
+    editor.getModel().onDidChangeContent((e) => {
+      validate(editor,xcss,className.value)
+      parseCode()
+    })
+    watch(() => className.value,() => {
+      validate(editor,xcss,className.value)
       parseCode()
     })
   }
   onMounted(() => {
     initEditor()
-  })
-
-  
-
-  watch(() => className.value,async () => {
-    await validate(editor,xcss,className.value)
-    parseCode()
   })
 
   function parseCode(){
@@ -97,14 +95,14 @@
   <div class="flex-c gap-8 margin-b-8">
     <label for="className">ClassName</label>
     <InputText id="className" type="text" v-model="className" class="w-50% margin-b-8" placeholder="请输入ClassName"/>
-</div>
+  </div>
   <div class="flex-c gap-8">
       <label for="className">ParseArea</label>
       <Splitter style="height: 300px" class="mb-5">
-        <SplitterPanel>
+        <SplitterPanel class="w-0 over-v">
           <div id="container" class="w-100% h-100%"></div>
         </SplitterPanel>
-        <SplitterPanel class="code-panel">
+        <SplitterPanel class="code-panel w-0">
             <pre 
               class="language-css w-100% h-100% padding-tb-8 padding-lr-16 margin-0! "
               data-prismjs-copy="拷贝"
@@ -120,7 +118,4 @@
   :deep(.code-panel .code-toolbar){
     height: 100%;
   }
-  /* :deep(#container .monaco-editor){
-    padding-top: 8px;
-  } */
 </style>

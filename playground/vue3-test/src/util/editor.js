@@ -48,15 +48,43 @@ export function loadTips(tips){
     triggerCharacters: ["$",""]
 });
 }
-let decoration = null;
-export async function validate(editor,xcss,className = 'red') {
+export async function validate(editor,xcss,className = 'test') {
   let model = editor.getModel();
-  if(!decoration){
-    decoration = editor.createDecorationsCollection([]);
-  }
-  decoration.clear();
 	const markers = [];
 	// lines start at 1
+  let tempStr = ''
+  let tempStrNumbers = [];
+  let isSpace = false;
+  async function handleErrorAndBackground(range){
+    if(isSpace && tempStr != ''){
+      let result = xcss.parseClass(tempStr,className).map(e => {
+        e.style = e.style.replace(/\s/g,'')
+        return e;
+      })
+      let newRange = {
+        startLineNumber: range.startLineNumber,
+        startColumn: range.startColumn + tempStrNumbers[0],
+        endLineNumber: range.endLineNumber,
+        endColumn: range.startColumn + tempStrNumbers[tempStrNumbers.length - 1] + 1
+      }
+      if(!result.length){
+        markers.push({
+          message: "不支持的class",
+          severity: monaco.MarkerSeverity.Error,
+          ...newRange
+        });
+      }else{
+        markers.push({
+          message: await formatCode(xcss.genStyleStr(result)),
+          severity: monaco.MarkerSeverity.Info,
+          ...newRange
+        });
+      }
+      isSpace = false;
+      tempStr = '';
+      tempStrNumbers = [];
+    }
+  }
 	for (let i = 1; i < model.getLineCount() + 1; i++) {
 		const range = {
 			startLineNumber: i,
@@ -65,44 +93,11 @@ export async function validate(editor,xcss,className = 'red') {
 			endColumn: model.getLineLength(i) + 1,
 		};
 		const content = model.getValueInRange(range);
-    let tempStr = ''
-    let tempStrNumbers = [];
-    let isSpace = false;
-    async function handleErrorAndBackground(){
-      if(isSpace && tempStr != ''){
-        let result = xcss.parseClass(tempStr,className).map(e => {
-          e.style = e.style.replace(/\s/g,'')
-          return e;
-        })
-        let newRange = {
-          startLineNumber: range.startLineNumber,
-          startColumn: range.startColumn + tempStrNumbers[0],
-          endLineNumber: range.endLineNumber,
-          endColumn: range.startColumn + tempStrNumbers[tempStrNumbers.length - 1] + 1
-        }
-        if(!result.length){
-          markers.push({
-            message: "不支持的class",
-            severity: monaco.MarkerSeverity.Error,
-            ...newRange
-          });
-        }else{
-          markers.push({
-            message: await formatCode(xcss.genStyleStr(result)),
-            severity: monaco.MarkerSeverity.Info,
-            ...newRange
-          });
-        }
-        isSpace = false;
-        tempStr = '';
-        tempStrNumbers = [];
-      }
-    }
 		for(let i = 0; i < content.length; i++){
       if(content[i] == ' '){
         isSpace = true;
       }else{
-        await handleErrorAndBackground();
+        await handleErrorAndBackground(range);
         tempStr += content[i]
         tempStrNumbers.push(i)
       }
@@ -111,7 +106,43 @@ export async function validate(editor,xcss,className = 'red') {
         tempStrNumbers.push(i)
       }
     }
-		await handleErrorAndBackground();
+		await handleErrorAndBackground(range);
 	}
-	monaco.editor.setModelMarkers(model, "owner", markers);
+	monaco.editor.setModelMarkers(model, "owner1", markers);
+}
+export function defineXCssLanguage(xcss){
+  let responsiveKeys = Object.keys(xcss.responsiveDefine).map(key => {
+    return [new RegExp(`${key}`),"custom-responsive"]
+  });
+  let pesudoKeys = Object.keys(xcss.pseudoClassDefine).map(key => {
+    return [new RegExp(`${key}`),"custom-pesudo"]
+  });
+  let rulesKeys = xcss.rules.map(e => {
+    return [e[0],"custom-date"]
+  })
+  console.log(responsiveKeys)
+  monaco.languages.register({ id: "xcss" });
+  // Register a tokens provider for the language
+  monaco.languages.setMonarchTokensProvider("xcss", {
+    tokenizer: {
+      root: [
+        ...responsiveKeys,...pesudoKeys,...rulesKeys
+      ],
+    },
+  });
+
+  // Define a new theme that contains only rules that match this language
+  monaco.editor.defineTheme("xcssTheme", {
+    base: "vs",
+    inherit: false,
+    rules: [
+      { token: "custom-info", foreground: "808080" },
+      { token: "custom-responsive", foreground: "ff0000", fontStyle: "bold" },
+      { token: "custom-pesudo", foreground: "FFA500" },
+      { token: "custom-date", foreground: "008800" },
+    ],
+    colors: {
+      "editor.foreground": "#000000",
+    },
+  });
 }
