@@ -75,7 +75,7 @@ export default class XCss{
     let responsiveTips = Object.keys(this.responsiveDefine).map(key => {
       return [...tips.map(e => key + e),...pseudoTips.map(e => key + e)]
     }).flat(1)
-    return [...tips,...pseudoTips,...responsiveTips];
+    return [...tips,...pseudoTips,...responsiveTips,...Object.keys(this.shortDefine)];
   }
 
   /**
@@ -149,36 +149,36 @@ export default class XCss{
     }
     return '';
   }
-  genStyleStr(result:Array<ParseResult>){
+  genStyleStr(result:Array<ParseResult>,name?:string){
     let style = '';
     if(result && result.length){
-      style = this.#genResponsiveStyle(result);
+      style = this.#genResponsiveStyle(result,name);
     }
     return style;
   }
-  #genResponsiveStyle(result:Array<ParseResult>){
+  #genResponsiveStyle(result:Array<ParseResult>,name?:string){
     let style = '';
     let map:Map<string,Array<ParseResult>> = Map.groupBy(result,e => e.responsive)
     Array.from(map.keys()).forEach(key => {
       if(key){
         style += `
           ${key}{
-            ${this.#genNameStyle(map.get(key)!)}
+            ${this.#genNameStyle(map.get(key)!,name)}
           }
         `
       }else{
         style += `
-          ${this.#genNameStyle(map.get(key)!)}
+          ${this.#genNameStyle(map.get(key)!,name)}
         `
       }
     })
     return style;
   }
 
-  #genNameStyle(result:Array<ParseResult>){
+  #genNameStyle(result:Array<ParseResult>,name?:string){
     let map:Map<string,Array<ParseResult>> = Map.groupBy(result,e => e.name)
     return Array.from(map.keys()).map(key => {
-      return this.#genPseudoStyle(key,map.get(key)!)
+      return this.#genPseudoStyle(name || key,map.get(key)!)
     }).join('\n')
   }
 

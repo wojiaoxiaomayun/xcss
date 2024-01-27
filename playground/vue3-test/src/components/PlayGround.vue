@@ -21,17 +21,18 @@
     }
   })
 
-  import { useThemeModelStore } from '../store/SettingStore';
+  import { useThemeModelStore,useThemeStore,usePseudoClassStore,useResponsiveStore,useShortClassStore } from '../store/SettingStore';
   import {formatCode} from '../util/format'
   
   const className = ref('test')
   const code = ref(`.${className.value}{width:100%;}`)
   const codeHighLight = ref('')
+  const tips = ref(xcss.getTips())
   
   watch(() => code.value,async () => {
     codeHighLight.value = Prism.highlight(await formatCode(code.value),Prism.languages.css,'css')
   },{immediate:true})
- 
+
 
   import * as monaco from 'monaco-editor'
   import {loadTips,validate,defineXCssLanguage} from '../util/editor'
@@ -51,11 +52,41 @@
     }
     monaco.editor.setTheme(`vs${themeModelStore.themeModel == 'dark'?'-dark':''}`)
   })
+  const xcssThemeStore = useThemeStore();
+  const xcssPseudoStore = usePseudoClassStore();
+  const xcssResponsiveStore = useResponsiveStore();
+  const xcssShortStore = useShortClassStore();
+  watchEffect(() => {
+    let tempTheme = {}
+    xcssThemeStore.theme.forEach(({name,value}) => {
+      tempTheme[name] = value
+    })
+    let tempPesudoClass = {}
+    xcssPseudoStore.pseudoClass.forEach(({name,value}) => {
+      tempPesudoClass[name] = value
+    })
+    let tempResponsive = {}
+    xcssResponsiveStore.responsive.forEach(({name,value}) => {
+      tempResponsive[name] = value
+    })
+    let tempShort = {}
+    xcssShortStore.short.forEach(({name,value}) => {
+      tempShort[name] = value.join(' ')
+    })
+    xcss.update({
+      presets:[preset()],
+      theme:tempTheme,
+      pseudoClassDefine:tempPesudoClass,
+      responsiveDefine:tempResponsive,
+      shortDefine:tempShort
+    })
+    tips.value = xcss.getTips();
+  })
   let editor = null
   function initEditor(){
             // 初始化编辑器，确保dom已经渲染
     // defineXCssLanguage(xcss)
-    loadTips(xcss.getTips());
+    loadTips(tips);
     editor = monaco.editor.create(document.getElementById('container'), {
         value: '',
         language:'sql',
@@ -85,7 +116,7 @@
       code.value = xcss.genStyleStr(xcss.parseShortClass(className.value,value.split(/\s/g)).map(e => {
         e.style = e.style.replace(/\s/g,'')
         return e;
-      }))
+      }),className.value)
     }else{
       code.value = `.${className.value}{width:100%;}`
     }

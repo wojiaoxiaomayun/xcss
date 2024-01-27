@@ -30,7 +30,7 @@ export function loadTips(tips){
             //拦截到用户输入$，开始设置提示内容，同else中代码一致，自行拓展
         }else{
             //直接提示，以下为sql语句关键词提示
-            var sqlStr = tips || [];
+            var sqlStr = tips.value || [];
             for(var i in sqlStr){
                 suggestions.push({
                     label: sqlStr[i], // 显示的提示内容
