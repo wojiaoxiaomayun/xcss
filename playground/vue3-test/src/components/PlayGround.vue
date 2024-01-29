@@ -113,7 +113,6 @@
   function parseCode(){
     let value = editor.getValue();
     if(value){
-      console.log(xcss.parseShortClass(className.value,value.split(/\s/g)))
       code.value = xcss.genStyleStr(xcss.parseShortClass(className.value,value.split(/\s/g)).map(e => {
         e.style = e.style.replace(/\s/g,'')
         return e;

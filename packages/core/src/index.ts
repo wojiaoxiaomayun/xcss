@@ -40,31 +40,19 @@ export default class XCss{
   }
 
   update(options:XCssOptions = {}){
-    if(options.rules){
-      this.rules = options.rules
-    }
-    if(options.theme){
-      this.theme = options.theme
-    }
-    if(options.shortDefine){
-      this.shortDefine = options.shortDefine
-    }
-    if(options.pseudoClassDefine){
-      this.pseudoClassDefine = options.pseudoClassDefine
-    }
-    if(options.responsiveDefine){
-      this.responsiveDefine = options.responsiveDefine
-    }
-    if(options.presets){
-      this.presets = options.presets
-      this.presets.forEach(preset => {
-        this.rules.push(...(preset.rules || []))
-        this.theme = Object.assign({},preset.theme || {},this.theme)
-        this.pseudoClassDefine = Object.assign({},preset.pseudoClassDefine || {},this.pseudoClassDefine)
-        this.responsiveDefine = Object.assign({},preset.responsiveDefine || {},this.responsiveDefine)
-        this.shortDefine = Object.assign({},preset.shortDefine || {},this.shortDefine)
-      })
-    }
+    this.presets = options?.presets || []
+    this.rules = options?.rules || []
+    this.theme = options?.theme || {}
+    this.shortDefine = options?.shortDefine || {}
+    this.pseudoClassDefine = options?.pseudoClassDefine || {}
+    this.responsiveDefine = options?.responsiveDefine || {}
+    this.presets.forEach(preset => {
+      this.rules.push(...(preset.rules || []))
+      this.theme = Object.assign({},preset.theme || {},this.theme)
+      this.pseudoClassDefine = Object.assign({},preset.pseudoClassDefine || {},this.pseudoClassDefine)
+      this.responsiveDefine = Object.assign({},preset.responsiveDefine || {},this.responsiveDefine)
+      this.shortDefine = Object.assign({},preset.shortDefine || {},this.shortDefine)
+    })
   }
 
   getTips():Array<string>{
