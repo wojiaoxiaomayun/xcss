@@ -117,7 +117,7 @@ export default class XCss{
   parseClass(cla:string,name?:string):Array<ParseResult>{
     let shortKey = Object.keys(this.shortDefine).find(key => key == cla);
     if(shortKey){
-      return this.parseShortClass(shortKey,this.shortDefine[shortKey].split(' '))
+      return this.parseShortClass(name || shortKey,this.shortDefine[shortKey].split(' '))
     }
     let responsiveKey = Object.keys(this.responsiveDefine).find(key => cla.startsWith(key))
     let tempCla = responsiveKey?cla.replace(responsiveKey,''):cla;
